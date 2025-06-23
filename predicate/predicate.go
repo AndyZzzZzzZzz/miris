@@ -1,5 +1,7 @@
 package predicate
 
+// This package defines predicate functions: conditions that return true or false when applied to a set of objects tracks
+
 import (
 	"github.com/mitroadmaps/gomapinfer/common"
 	"github.com/mitroadmaps/miris/miris"
@@ -9,10 +11,14 @@ var predicates = make(map[string]Predicate)
 
 type Predicate func(tracks [][]miris.Detection) bool
 
+// track: a sequence of detections for a single object as it moves through a video
+
 func GetPredicate(predicate string) Predicate {
 	return predicates[predicate]
 }
 
+// Checks if a track starts in ploy1 and ends in poly2
+// Example query: Find vehicles that turn right at an intersection
 func StartEndPredicate(poly1 common.Polygon, poly2 common.Polygon) Predicate {
 	return func(tracks [][]miris.Detection) bool {
 		track := tracks[0]
@@ -24,6 +30,8 @@ func StartEndPredicate(poly1 common.Polygon, poly2 common.Polygon) Predicate {
 }
 
 // require track to pass through the polygons in any order
+// Ensures a track passes through all polygons, but in any order
+// Example query: Find animals that visited zones A, B, and C at some point
 func PointSetPredicate(polygons []common.Polygon) Predicate {
 	return func(tracks [][]miris.Detection) bool {
 		track := miris.Densify(tracks[0])
@@ -45,6 +53,8 @@ func PointSetPredicate(polygons []common.Polygon) Predicate {
 }
 
 // track must pass through polygons in order
+// Ensures a track passes through all polygons in order
+// Example query: Find cars that follow a left-turn trajectory (A -> B -> C)
 func WaypointPredicate(polygons []common.Polygon) Predicate {
 	return func(tracks [][]miris.Detection) bool {
 		track := miris.Densify(tracks[0])
@@ -62,6 +72,7 @@ func WaypointPredicate(polygons []common.Polygon) Predicate {
 	}
 }
 
+// Combines multiple predicates. Succeeds if any predicate matches
 func Or(predicates ...Predicate) Predicate {
 	return func(tracks [][]miris.Detection) bool {
 		for _, predicate := range predicates {
