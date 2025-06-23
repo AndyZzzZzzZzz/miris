@@ -1,6 +1,7 @@
 from transformer import AutoTokenizer, AutoModelForCausalLM
 import torch
 import sys
+import json
 
 # other candidate: meta-llama/Llama-2-7b-hf
 # mistralai/istral-7B-v0.1
@@ -16,6 +17,14 @@ model = AutoModelForCausalLm.from_pretrained(
         device_map="auto",                  # spreads the model across available GPUs
         trust_remote_code=True              # allows loading models with custom Python code from the model repo
         )
+
+
+def emb(text):
+    ids = tok(text, return_tensors="pt").to(net.device)
+
+    with torch.no_grad():
+        out = net(**ids).last_hidden_state.mean(1)
+    return out.squeeze().cpu().half().numpy().tolist()
 
 
 def generate_dummy_embedding(input_text: str):
@@ -39,7 +48,8 @@ def generate_dummy_embedding(input_text: str):
     return output.last_hidden_state.mean(dim=1).squeeze().cpu().numpy()
 
 if __name__ == "__main__":
-    text = sys.argv[1] if len(sys.argv) > 1 else "hello"
-    embedding = generate_dummy_embedding(text)
-    print("Embedding shape:", embeddig.shape)
+    # text = sys.argv[1] if len(sys.argv) > 1 else "hello"
+    # embedding = generate_dummy_embedding(text)
+    # print("Embedding shape:", embeddig.shape)
+    print(json.dumps(emb(sys.stdin.read().strip())))
 
