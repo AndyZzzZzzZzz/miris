@@ -11,6 +11,8 @@ import graph_nets, sonnet
 
 BATCH_SIZE = 4
 KERNEL_SIZE = 3
+# node feature size
+LLM_HIDDEN = 4544
 
 class Model:
 	def _conv_layer(self, name, input_var, stride, in_channels, out_channels, options = {}):
@@ -112,7 +114,11 @@ class Model:
 
 		self.is_training = tf.placeholder(tf.bool)
 		self.inputs = graph_nets.utils_tf.placeholders_from_data_dicts(example_graphs[0])
-		self.input_crops = tf.placeholder(tf.float32, [None, 64, 64, 3])
+
+                # placeholder for pre-computed LLM embeddings
+                self.node_emb = tf.placeholder(tf.float32, [None, LLM_HIDDEN], name="llm_emb")
+		"""
+                self.input_crops = tf.placeholder(tf.float32, [None, 64, 64, 3])
 		self.targets = graph_nets.utils_tf.placeholders_from_data_dicts(example_graphs[1])
 		self.learning_rate = tf.placeholder(tf.float32)
 
@@ -122,9 +128,14 @@ class Model:
 		self.layer4 = self._conv_layer('layer4', self.layer3, 2, 64, 64) # -> 4x4x64
 		self.layer5 = self._conv_layer('layer5', self.layer4, 2, 64, 64) # -> 2x2x64
 		self.layer6 = self._conv_layer('layer6', self.layer5, 2, 64, 64)[:, 0, 0, :]
-		self.initial_graphs = self.inputs.replace(nodes=tf.concat([self.inputs.nodes[:, 0:8], self.layer6], axis=1))
+		"""
 
-		def mlp_model(n=64):
+                # self.initial_graphs = self.inputs.replace(nodes=tf.concat([self.inputs.nodes[:, 0:8], self.layer6], axis=1))
+
+                self.initial_graph = self.inputs.replace(nodes=tf.concat([self.inputs.nodes[:, 0:8], self.node_emb], axis=1))
+	        
+                # prev n=64
+                def mlp_model(n=LLM_HIDDEN):
 			def f():
 				return sonnet.Sequential([
 					sonnet.nets.MLP([n], activate_final=True),
