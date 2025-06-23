@@ -1,5 +1,12 @@
 package main
 
+// Main driver for MIRIS
+/*
+1. Loads the query plan for disk
+2. Loads the relevant dataset + model config
+3. Builds the output path
+4. Runs the full MIRIS pipeline via exec.Exec
+*/
 import (
 	"github.com/mitroadmaps/miris/data"
 	"github.com/mitroadmaps/miris/exec"
