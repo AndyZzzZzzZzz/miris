@@ -1,0 +1,35 @@
+@ dataset and generated data
+data/*/
+!data/*/*.csv # keep ground truth CSVs (used in evaluation)
+data/*/frames/
+data/*/json/
+data/*/videos/
+
+ytstream-dataset.zip
+
+# ignore python go bytecode
+__pycache__/
+*.py[cod]
+*.go~
+
+logs/
+
+# ignore model checkpoints and training outputs
+models/gnn/checkpoints/
+models/rnn/*/model/
+models/rnn/*.pt
+models/rnn/*.json
+
+*.out
+*.o
+*.a
+*.so
+
+*.log
+*.tmp
+*.swp
+.DS_Store
+
+*.json
+!plan_schema.json 
+
