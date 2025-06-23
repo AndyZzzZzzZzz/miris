@@ -1,9 +1,9 @@
 package planner
 
 import (
-	"../filter"
-	"../miris"
-	"../refine"
+	"github.com/mitroadmaps/miris/filter"
+	"github.com/mitroadmaps/miris/miris"
+	"github.com/mitroadmaps/miris/refine"
 
 	"log"
 )

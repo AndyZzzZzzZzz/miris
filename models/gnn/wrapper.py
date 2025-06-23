@@ -2,7 +2,7 @@ import geom
 import model
 
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+# os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
 import graph_nets
 import json
@@ -53,9 +53,10 @@ target_example = {
 	'receivers': [1, 0],
 }
 m = model.Model([[input_example], [target_example]])
-config = tf.ConfigProto(
-	device_count={'GPU': 0}
-)
+config = tf.ConfigProto()
+#	device_count={'GPU': 0}
+#)
+config.gpu_options.allow_growth = True
 session = tf.Session(config=config)
 m.saver.restore(session, model_path)
 

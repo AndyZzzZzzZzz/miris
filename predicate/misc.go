@@ -3,7 +3,7 @@ package predicate
 // miscellaneous queries
 
 import (
-	"../miris"
+	"github.com/mitroadmaps/miris/miris"
 	"github.com/mitroadmaps/gomapinfer/common"
 )
 

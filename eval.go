@@ -1,8 +1,8 @@
 package main
 
 import (
-	"./miris"
-	"./predicate"
+	"github.com/mitroadmaps/miris/miris"
+	"github.com/mitroadmaps/miris/predicate"
 
 	"fmt"
 	"io/ioutil"

@@ -1,9 +1,9 @@
 package refine
 
 import (
-	"../miris"
-	"../predicate"
-	rnnlib "../models/rnn"
+	"github.com/mitroadmaps/miris/miris"
+	"github.com/mitroadmaps/miris/predicate"
+	rnnlib "github.com/mitroadmaps/miris/models/rnn"
 
 	"fmt"
 	"strconv"

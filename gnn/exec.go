@@ -1,7 +1,7 @@
 package gnn
 
 import (
-	"../miris"
+	"github.com/mitroadmaps/miris/miris"
 
 	"fmt"
 	"sort"

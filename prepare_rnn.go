@@ -1,11 +1,24 @@
 package main
 
+/*
 import (
 	"./data"
 	"./miris"
 	"./predicate"
 	rnnlib "./models/rnn"
 
+	"fmt"
+	"log"
+	"os"
+	"strconv"
+)*/
+
+import (
+	"github.com/mitroadmaps/miris/data"
+	"github.com/mitroadmaps/miris/miris"
+	"github.com/mitroadmaps/miris/predicate"
+	rnnlib "github.com/mitroadmaps/miris/models/rnn"
+	
 	"fmt"
 	"log"
 	"os"

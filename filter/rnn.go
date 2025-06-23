@@ -1,8 +1,8 @@
 package filter
 
 import (
-	"../miris"
-	rnnlib "../models/rnn"
+	"github.com/mitroadmaps/miris/miris"
+	rnnlib "github.com/mitroadmaps/miris/models/rnn"
 )
 
 func init() {

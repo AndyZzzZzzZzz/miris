@@ -1,11 +1,11 @@
 package exec
 
 import (
-	filterlib "../filter"
-	gnnlib "../gnn"
-	"../miris"
-	"../predicate"
-	"../refine"
+	filterlib "github.com/mitroadmaps/miris/filter"
+	gnnlib "github.com/mitroadmaps/miris/gnn"
+	"github.com/mitroadmaps/miris/miris"
+	"github.com/mitroadmaps/miris/predicate"
+	"github.com/mitroadmaps/miris/refine"
 
 	"log"
 	"os"

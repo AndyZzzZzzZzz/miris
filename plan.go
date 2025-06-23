@@ -1,9 +1,9 @@
 package main
 
 import (
-	"./data"
-	"./miris"
-	"./planner"
+	"github.com/mitroadmaps/miris/data"
+	"github.com/mitroadmaps/miris/miris"
+	"github.com/mitroadmaps/miris/planner"
 
 	"fmt"
 	"log"

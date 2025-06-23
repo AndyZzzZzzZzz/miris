@@ -2,7 +2,7 @@ package predicate
 
 import (
 	"github.com/mitroadmaps/gomapinfer/common"
-	"../miris"
+	"github.com/mitroadmaps/miris/miris"
 )
 
 var predicates = make(map[string]Predicate)

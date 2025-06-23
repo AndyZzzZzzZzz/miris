@@ -1,8 +1,8 @@
 package rnn
 
 import (
-	"../../miris"
-	"../../predicate"
+	"github.com/mitroadmaps/miris/miris"
+	"github.com/mitroadmaps/miris/predicate"
 
 	"bufio"
 	"encoding/json"
