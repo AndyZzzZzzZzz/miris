@@ -37,6 +37,12 @@ def get_frame_fname(frame_idx):
 		s = '0' + s
 	return s + '.jpg'
 
+# Helper function to make text for the LLM 
+def make_text(d, frame_idx):
+    cx, cy = get_loc(d)
+    return f"id={d['track_id']} frame={frame_idx} cx={cx:.3f} cy={cy:.3f} "\
+           f"w={(d['right']-d['left'])/ORIG_WIDTH:.3f} h={(d['bottom']-d['top'])/ORIG_HEIGHT:.3f}"
+
 def zip_frame_info(detections, label, frame_idx):
 	if not detections:
 		return []
@@ -55,17 +61,18 @@ def zip_frame_info(detections, label, frame_idx):
 		rect = im_bounds.clip_rect(rect)
 		if rect.lengths().x < 4 or rect.lengths().y < 4:
 			continue
-		crop = im[rect.start.x:rect.end.x, rect.start.y:rect.end.y, :]
-		resize_factor = min([float(CROP_SIZE) / crop.shape[0], float(CROP_SIZE) / crop.shape[1]])
-		resize_shape = [int(crop.shape[0] * resize_factor), int(crop.shape[1] * resize_factor)]
-		if resize_shape[0] == 0 or resize_shape[1] == 0:
-			continue
-		crop = (skimage.transform.resize(crop, resize_shape)*255).astype('uint8')
-		fix_crop = numpy.zeros((CROP_SIZE, CROP_SIZE, 3), dtype='uint8')
-		fix_crop[0:crop.shape[0], 0:crop.shape[1], :] = crop
+		# crop = im[rect.start.x:rect.end.x, rect.start.y:rect.end.y, :]
+		# resize_factor = min([float(CROP_SIZE) / crop.shape[0], float(CROP_SIZE) / crop.shape[1]])
+		# resize_shape = [int(crop.shape[0] * resize_factor), int(crop.shape[1] * resize_factor)]
+		# if resize_shape[0] == 0 or resize_shape[1] == 0:
+		# 	continue
+		# crop = (skimage.transform.resize(crop, resize_shape)*255).astype('uint8')
+		# fix_crop = numpy.zeros((CROP_SIZE, CROP_SIZE, 3), dtype='uint8')
+		# fix_crop[0:crop.shape[0], 0:crop.shape[1], :] = crop
 		detection['width'] = float(detection['right']-detection['left'])/ORIG_WIDTH
 		detection['height'] = float(detection['bottom']-detection['top'])/ORIG_HEIGHT
-		info.append((detection, fix_crop, idx))
+		# info.append((detection, fix_crop, idx))
+                info.append((detection, make_text(detection,frame_idx), idx))
 	return info
 
 def get_loc(detection):
@@ -86,13 +93,17 @@ def get_frame_pair(info1, info2, skip):
 	input_nodes = []
 	input_edges = []
 	target_edges = []
-	input_crops = []
+	# input_crops = []
+        input_texts = []
 
 	for i, t in enumerate(info1):
-		detection, crop, _ = t
+		# detection, crop, _ = t
+                detection, text, _ = t
 		cx, cy = get_loc(detection)
 		input_nodes.append([cx, cy, detection['width'], detection['height'], 1, 0, 0, skip/50.0])
-		input_crops.append(crop)
+		# input_crops.append(crop)
+                input_texts.append(text)
+
 	input_nodes.append([0.5, 0.5, 0, 0, 0, 1, 0, skip/50.0])
 	input_crops.append(numpy.zeros((CROP_SIZE, CROP_SIZE, 3), dtype='uint8'))
 	for i, t in enumerate(info2):
@@ -181,7 +192,8 @@ def get_frame_pair(info1, info2, skip):
 		"senders": senders,
 		"receivers": receivers,
 	}
-	return input_dict, target_dict, input_crops, num_matches
+	# return input_dict, target_dict, input_crops, num_matches
+        return input_dict, target_dict, input_texts, num_matches
 
 all_pairs = []
 
@@ -240,6 +252,14 @@ best_loss = None
 epochs_without_better = 0
 learning_rate = 1e-3
 
+def texts_to_embs(texts):
+    """ Convert text to embeddings """
+    proc = subprocess.run(
+        ["python3", "huggingface_runner.py"],
+        input="\n".join(texts),
+        text=True, capture_output=True)
+    return numpy.array(json.loads(proc.stdout))
+
 for epoch in range(9999):
 	start_time = time.time()
 	train_losses = []
@@ -247,8 +267,12 @@ for epoch in range(9999):
 		batch_examples = random.sample(train_pairs, model.BATCH_SIZE)
 		d1 = graph_nets.utils_tf.get_feed_dict(m.inputs, graph_nets.utils_np.data_dicts_to_graphs_tuple([example[0] for example in batch_examples]))
 		d2 = graph_nets.utils_tf.get_feed_dict(m.targets, graph_nets.utils_np.data_dicts_to_graphs_tuple([example[1] for example in batch_examples]))
+
+                flat_texts = sum([ex[2] for ex in batch_examples], [])
+
 		feed_dict = {
-			m.input_crops: numpy.concatenate([example[2] for example in batch_examples], axis=0).astype('float32')/255,
+                        # previously m.input_crops
+			m.node_emb: texts_to_embs(flat_texts), 
 			m.is_training: True,
 			m.learning_rate: learning_rate,
 		}
@@ -264,8 +288,11 @@ for epoch in range(9999):
 		batch_examples = val_pairs[i:i+model.BATCH_SIZE]
 		d1 = graph_nets.utils_tf.get_feed_dict(m.inputs, graph_nets.utils_np.data_dicts_to_graphs_tuple([example[0] for example in batch_examples]))
 		d2 = graph_nets.utils_tf.get_feed_dict(m.targets, graph_nets.utils_np.data_dicts_to_graphs_tuple([example[1] for example in batch_examples]))
+
+                flat_texts = sum([ex[2] for ex in batch_examples], [])
+
 		feed_dict = {
-			m.input_crops: numpy.concatenate([example[2] for example in batch_examples], axis=0).astype('float32')/255,
+			m.node_emb: texts_to_embs(flat_texts), 
 			m.is_training: False,
 		}
 		feed_dict.update(d1)
